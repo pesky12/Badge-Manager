@@ -7,11 +7,7 @@
         "LoliPoliceDepartment.Utilities.AccountManager.Resources",
         "LoliPoliceDepartment.Utilities.AccountManager.Udon"
     ],
-    "includePlatforms": [
-        "Android",
-        "Editor",
-        "iOS"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
