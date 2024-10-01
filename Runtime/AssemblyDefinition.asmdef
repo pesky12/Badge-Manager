@@ -1,5 +1,5 @@
 {
-    "name": "AssemblyDefinition",
+    "name": "Box.BadgeManager",
     "rootNamespace": "",
     "references": [
         "UdonSharp.Runtime",
