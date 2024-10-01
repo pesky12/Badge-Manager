@@ -1,5 +1,5 @@
 {
-    "name": "Box.BadgeManager",
+    "name": "pesky.box.badgemanager",
     "rootNamespace": "",
     "references": [
         "UdonSharp.Runtime",
