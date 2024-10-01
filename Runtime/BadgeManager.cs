@@ -32,7 +32,7 @@ namespace PeskyBox.BadgeManager
         // Staff Info Badge Roles
         [SerializeField] string[] toggleableBadgeRoles = new string[0];
         [SerializeField] GameObject[] toggleableBadgeObjects = new GameObject[0];
-        [SerializeField] GameObject[] toggleableBadges = new GameObject[0];
+        GameObject[] toggleableBadges = new GameObject[0];
         private bool areToggleableBadgesToggled = false;
         
         // Badge Owners
@@ -195,11 +195,17 @@ namespace PeskyBox.BadgeManager
             
             // Remove or add badge by adding or removing the player from the hidden list
             Networking.SetOwner(Networking.LocalPlayer, gameObject);
-            if (HasBadge(Networking.LocalPlayer))
+            if (!GetBadge(Networking.LocalPlayer).activeInHierarchy)
+            {
+                LOG("Removing badge from hidden", false);
                 removeFromHiddenPlayers(Networking.LocalPlayer.playerId);
+            }
             else
+            {
+                LOG("Adding badge to hidden", false);
                 addToHiddenPlayers(Networking.LocalPlayer.playerId);
-            
+            }
+
             // Serialize the data
             RequestSerialization();
             OnDeserialization();
@@ -213,6 +219,7 @@ namespace PeskyBox.BadgeManager
             // Update badge visibility
             for (int i = 0; i < _badgeOwners.Length; i++)
             {
+                LOG($"Updating badge {i} visibility", false);
                 _badgeObjects[i].SetActive(!_badgeIsHiddenOwnersIndex[i]);
             }
         }
@@ -229,6 +236,20 @@ namespace PeskyBox.BadgeManager
 
             return false;
         }
+        
+        private GameObject GetBadge(VRCPlayerApi player)
+        {
+            for (int i = 0; i < _badgeOwners.Length; i++)
+            {
+                if (_badgeOwners[i].playerId == player.playerId)
+                {
+                    return _badgeObjects[i];
+                }
+            }
+
+            return null;
+        }
+        
         
         private void updateHiddenBadgeOwnersIndex()
         {
