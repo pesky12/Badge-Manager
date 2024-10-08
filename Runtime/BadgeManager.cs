@@ -305,6 +305,7 @@ namespace PeskyBox.BadgeManager
             badgeContainer.SetActive(state);
             
             // Set the toggles to the correct state
+            foreach (var toggle in showAllBadgesToggles) toggle.SetIsOnWithoutNotify(state);
         }
 
         public void setToggleableBadges(bool state)
