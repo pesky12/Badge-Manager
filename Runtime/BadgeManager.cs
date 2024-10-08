@@ -29,6 +29,9 @@ namespace PeskyBox.BadgeManager
         [SerializeField] private Vector3 badgeOffset;
         [SerializeField] private bool logEnabled = true;
 
+        // Badge Container
+        [SerializeField] private GameObject badgeContainer;
+
         // Badge Roles
         // This needs to be ordered from the highest rank to lowest
         [SerializeField] private string[] badgeRoles = new string[0];
@@ -63,17 +66,21 @@ namespace PeskyBox.BadgeManager
         // Anti-spam
         private float localTimeStorage;
         private int localCounterStorage;
+        
 
         // Toggles
         public Toggle[] showMyBadgeToggles;
         public Toggle[] showToggleableBadgesToggles;
+        public Toggle[] showAllBadgesToggles;
 
         private void Start()
         {
-            // Load player data
+            // Initialize variables
             _localPlayer = Networking.LocalPlayer;
+            
             UpdatePlayerList();
 
+            // Account manager go!
             accountManager.NotifyWhenInitialized(this, nameof(OnInitialized));
         }
 
@@ -126,7 +133,10 @@ namespace PeskyBox.BadgeManager
             // Create a canvas to add the badge to
             var badgeCanvas = Instantiate(badgeCanvasPrefab, player.GetBonePosition(HumanBodyBones.Head),
                 Quaternion.identity);
-
+            
+            // Put the badge canvas inside a badge container
+            badgeCanvas.transform.SetParent(badgeContainer.transform);
+            
             // Check if the player has a role badge
             for (var i = 0; i < badgeRoles.Length; i++)
             {
@@ -279,6 +289,22 @@ namespace PeskyBox.BadgeManager
 
             // Toggle the badge visibility
             setToggleableBadges(!areToggleableBadgesToggled);
+        }
+        
+        public void ToggleAllBadges()
+        {
+            LOG("Toggling all badges");
+
+            // Toggle the badge visibility
+            ShowAllBadgesState(!badgeContainer.activeSelf);
+        }
+        
+        private void ShowAllBadgesState(bool state)
+        {
+            // Just hide the badgeContainer
+            badgeContainer.SetActive(state);
+            
+            // Set the toggles to the correct state
         }
 
         public void setToggleableBadges(bool state)
@@ -501,6 +527,7 @@ namespace PeskyBox.BadgeManager
             // Clear all lists
             showMyBadgeToggles = Array.Empty<Toggle>();
             showToggleableBadgesToggles = Array.Empty<Toggle>();
+            showAllBadgesToggles = Array.Empty<Toggle>();
 
             var thisUdon = GetComponent<UdonBehaviour>();
 
@@ -511,12 +538,17 @@ namespace PeskyBox.BadgeManager
                     case BadgeToggleType.ShowMyBadge:
                         Array.Resize(ref showMyBadgeToggles, showMyBadgeToggles.Length + 1);
                         showMyBadgeToggles[^1] = hiddenBadgeToggle.GetComponent<Toggle>();
-                        setupToggleButton(thisUdon, hiddenBadgeToggle.GetComponent<Toggle>(), "toggleOwnBadge");
+                        setupToggleButton(thisUdon, hiddenBadgeToggle.GetComponent<Toggle>(), nameof(toggleOwnBadge));
                         break;
                     case BadgeToggleType.ShowToggleableBadges:
                         Array.Resize(ref showToggleableBadgesToggles, showToggleableBadgesToggles.Length + 1);
                         showToggleableBadgesToggles[^1] = hiddenBadgeToggle.GetComponent<Toggle>();
-                        setupToggleButton(thisUdon, hiddenBadgeToggle.GetComponent<Toggle>(), "ToggleToggleableBadge");
+                        setupToggleButton(thisUdon, hiddenBadgeToggle.GetComponent<Toggle>(), nameof(ToggleToggleableBadge));
+                        break;
+                    case BadgeToggleType.ShowAllBadges:
+                        Array.Resize(ref showAllBadgesToggles, showAllBadgesToggles.Length + 1);
+                        showAllBadgesToggles[^1] = hiddenBadgeToggle.GetComponent<Toggle>();
+                        setupToggleButton(thisUdon, hiddenBadgeToggle.GetComponent<Toggle>(), nameof(ToggleAllBadges));
                         break;
                 }
         }

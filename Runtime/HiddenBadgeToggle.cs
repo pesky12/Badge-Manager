@@ -10,7 +10,8 @@ namespace PeskyBox.BadgeManager
     public enum BadgeToggleType
     {
         ShowToggleableBadges,
-        ShowMyBadge
+        ShowMyBadge,
+        ShowAllBadges
     }
     
     [RequireComponent(typeof(Toggle))]
