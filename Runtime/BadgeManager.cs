@@ -186,7 +186,7 @@ namespace PeskyBox.BadgeManager
 
             // Add the badge canvas to the list
             AddBadgeCanvas(player, badgeCanvas);
-            updateHiddenBadgeOwnersIndex();
+            OnDeserialization();
             setToggleableBadges(areToggleableBadgesToggled);
         }
 
@@ -316,6 +316,7 @@ namespace PeskyBox.BadgeManager
 
             foreach (var badge in toggleableBadges)
             {
+				if (badge == null) continue;
                 badge.SetActive(state);
                 LOG($"Setting badge {badge.name} to {state}");
             }
