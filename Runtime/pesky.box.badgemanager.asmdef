@@ -3,14 +3,12 @@
     "rootNamespace": "",
     "references": [
         "UdonSharp.Runtime",
-        "LoliPoliceDepartment.Utilities.AccountManager.Example",
-        "LoliPoliceDepartment.Utilities.AccountManager.Resources",
-        "LoliPoliceDepartment.Utilities.AccountManager.Udon",
         "UdonSharp.Editor",
         "UdonSharp.Lib",
         "VRC.Udon",
         "VRC.Udon.Editor",
-        "VRC.Udon.Serialization.OdinSerializer"
+        "VRC.Udon.Serialization.OdinSerializer",
+        "LocalPoliceDepartment.Utilities.AccountManager.Udon"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

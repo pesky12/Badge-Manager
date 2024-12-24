@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: BadgeManager
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: b8e93f76c78c50e4d8762c3472a40339, type: 2}
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 49aee8bc25f84b5449fa7d74ddfe3b21, type: 2}
   udonAssembly: 
   assemblyError: 
   sourceCsScript: {fileID: 11500000, guid: 243328ccf25cef14f9154b932fda1e86, type: 3}
@@ -61,8 +61,8 @@ MonoBehaviour:
       Data: 3|System.RuntimeType, mscorlib
     - Name: 
       Entry: 1
-      Data: LoliPoliceDepartment.Utilities.AccountManager.OfficerAccountManager,
-        LoliPoliceDepartment.Utilities.AccountManager.Udon
+      Data: LocalPoliceDepartment.Utilities.AccountManager.OfficerAccountManager,
+        LocalPoliceDepartment.Utilities.AccountManager.Udon
     - Name: 
       Entry: 8
       Data: 
