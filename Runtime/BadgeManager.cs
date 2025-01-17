@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using LocalPoliceDepartment.Utilities.AccountManager;
+using LoliPoliceDepartment.Utilities.AccountManager;
 using UdonSharp;
 using UnityEditor;
 using UnityEngine;
@@ -45,6 +45,9 @@ namespace PeskyBox.BadgeManager
         [SerializeField] private string[] toggleableBadgeRoles = new string[0];
         [SerializeField] private GameObject[] toggleableBadgeObjects = new GameObject[0];
         [SerializeField] private GameObject[] toggleableBadges = new GameObject[0];
+
+        [SerializeField] private bool areBadgesTurnedOnByDefault = true; 
+
         private bool areToggleableBadgesToggled;
 
         // Badge Owners
@@ -95,6 +98,9 @@ namespace PeskyBox.BadgeManager
 
             // Sync up the badge hiding by simulating a Serialization request
             RequestSerialization();
+
+            // Set the badge visibility by default
+            ShowAllBadgesState(areBadgesTurnedOnByDefault);
         }
 
         private void LateUpdate()
