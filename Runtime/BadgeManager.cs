@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using LoliPoliceDepartment.Utilities.AccountManager;
+using LocalPoliceDepartment.Utilities.AccountManager;
 using UdonSharp;
 using UnityEditor;
 using UnityEngine;
