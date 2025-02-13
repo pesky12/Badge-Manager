@@ -1,12 +1,17 @@
 {
   "name": "vpm.pesky.box.badgemanager",
-  "description": "Manager for showing player badges above their heads",
-  "version": "0.3.4",
-  "unity": "2019.4",
+  "description": "Manager for showing player badges above player's heads",
+  "version": "0.4.0",
+  "unity": "2022.3",
   "displayName": "Badge Manager",
   "hideInEditor": false,
   "gitDependencies": {},
-  "vpmDependencies": {},
+  "vpmDependencies": {
+    "com.vrchat.worlds": "^3.2.0",
+    "com.vrchat.base": "^3.2.0",
+    "com.vrchat.udonsharp": "^1.1.0",
+    "com.localpolicedepartment.accountmanager": "~0"
+  },
   "legacyFolders": {},
   "legacyFiles": {},
   "type": "tool",

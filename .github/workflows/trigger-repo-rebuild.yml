@@ -1,15 +1,70 @@
-﻿name: Trigger Repo Update
+﻿name: Version Check and Release
 
 on:
-  release:
-    types: [published, unpublished, created, edited, deleted]
-  workflow_dispatch: 
+  push:
+    paths:
+      - 'package.json'
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  dispatch:
+  check-version:
     runs-on: ubuntu-latest
-    permissions: 
-      actions: write  # Add this line to grant write permissions to actions
+    permissions:
+      contents: write
+      actions: write
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      changed: ${{ steps.check_version.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      
+      - name: Get current version
+        id: get_version
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+      - name: Check if version changed
+        id: check_version
+        run: |
+          git checkout HEAD^1
+          OLD_VERSION=$(jq -r '.version' package.json)
+          git checkout -
+          if [ "$OLD_VERSION" != "${{ steps.get_version.outputs.version }}" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+  create-release:
+    needs: check-version
+    if: needs.check-version.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.check-version.outputs.version }}
+          release_name: Release v${{ needs.check-version.outputs.version }}
+          draft: false
+          prerelease: false
+
+  trigger-rebuild:
+    needs: [check-version, create-release]
+    if: always() && needs.check-version.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
     steps:
       - uses: actions/github-script@v6
         with:

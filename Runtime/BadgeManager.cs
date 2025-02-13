@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using VRC.SDKBase;
+using VRC.SDK3.Persistence;
 #if UNITY_EDITOR
 using UnityEditor.Events;
 using UnityEngine.Events;
@@ -69,7 +70,13 @@ namespace PeskyBox.BadgeManager
         // Anti-spam
         private float localTimeStorage;
         private int localCounterStorage;
-        
+
+        // Persistence keys
+        private const string PERSISTENCE_PREFIX = "Pesky_badgeManager_";
+        private const string BADGE_VISIBLE_KEY = PERSISTENCE_PREFIX + "myBadgeHidden";
+        private const string TOGGLEABLE_BADGES_KEY = PERSISTENCE_PREFIX + "showToggleableBadges";
+        private const string ALL_BADGES_KEY = PERSISTENCE_PREFIX +  "showAllBadges";
+        private bool _isDataRestored;
 
         // Toggles
         public Toggle[] showMyBadgeToggles;
@@ -87,20 +94,49 @@ namespace PeskyBox.BadgeManager
             accountManager.NotifyWhenInitialized(this, nameof(OnInitialized));
         }
 
+        public override void OnPlayerRestored(VRCPlayerApi player)
+        {
+            if (!player.isLocal) return;
+            _isDataRestored = true;
+
+            // For first-time visitors, initialize preferences with defaults
+            if (!PlayerData.HasKey(_localPlayer, BADGE_VISIBLE_KEY))
+            {
+                PlayerData.SetBool(BADGE_VISIBLE_KEY, false); // Not hidden by default
+            }
+            if (!PlayerData.HasKey(_localPlayer, TOGGLEABLE_BADGES_KEY))
+            {
+                PlayerData.SetBool(TOGGLEABLE_BADGES_KEY, false); // Not toggled by default
+            }
+            if (!PlayerData.HasKey(_localPlayer, ALL_BADGES_KEY))
+            {
+                PlayerData.SetBool(ALL_BADGES_KEY, areBadgesTurnedOnByDefault);
+            }
+
+            // Load persisted preferences (will get defaults we just set if this is first visit)
+            bool isBadgeVisible = !PlayerData.GetBool(_localPlayer, BADGE_VISIBLE_KEY); // Inverted because we store "hidden" state
+            bool areToggleableBadgesOn = PlayerData.GetBool(_localPlayer, TOGGLEABLE_BADGES_KEY);
+            bool areAllBadgesVisible = PlayerData.GetBool(_localPlayer, ALL_BADGES_KEY);
+
+            // Apply loaded preferences
+            if (!isBadgeVisible)
+            {
+                addToHiddenPlayers(Networking.LocalPlayer.playerId);
+                RequestSerialization();
+                OnDeserialization();
+            }
+            foreach (var toggle in showMyBadgeToggles) toggle.SetIsOnWithoutNotify(isBadgeVisible);
+
+            setToggleableBadges(areToggleableBadgesOn);
+            foreach (var toggle in showToggleableBadgesToggles) toggle.SetIsOnWithoutNotify(areToggleableBadgesOn);
+
+            ShowAllBadgesState(areAllBadgesVisible);
+        }
+
         public void OnInitialized()
         {
             // Simulate player join for all players to populate the badge list
             foreach (var player in _players) OnPlayerJoined(player);
-
-            // Set toggles to the correct state
-            foreach (var toggle in showMyBadgeToggles) toggle.SetIsOnWithoutNotify(true);
-            foreach (var toggle in showToggleableBadgesToggles) toggle.SetIsOnWithoutNotify(areToggleableBadgesToggled);
-
-            // Sync up the badge hiding by simulating a Serialization request
-            RequestSerialization();
-
-            // Set the badge visibility by default
-            ShowAllBadgesState(areBadgesTurnedOnByDefault);
         }
 
         private void LateUpdate()
@@ -111,9 +147,6 @@ namespace PeskyBox.BadgeManager
             // Update badge locations for all players
             for (var i = 0; i < _badgeOwners.Length; i++)
             {
-                // Don't update hidden badges
-                // if (_badgeIsHiddenOwnersIndex[i]) continue;
-
                 _badgeObjects[i].transform.position =
                     _badgeOwners[i].GetBonePosition(HumanBodyBones.Head) + badgeOffset;
 
@@ -207,6 +240,8 @@ namespace PeskyBox.BadgeManager
 
         public void toggleOwnBadge()
         {
+            if (!_isDataRestored) return;
+
             // Check if they are in the database
             if (!accountManager._IsOfficer(Networking.LocalPlayer))
             {
@@ -222,19 +257,25 @@ namespace PeskyBox.BadgeManager
             // Remove or add badge by adding or removing the player from the hidden list
             Networking.SetOwner(Networking.LocalPlayer, gameObject);
             var localPlayerBadge = GetBadge(Networking.LocalPlayer);
+            bool willBeVisible;
             if (!localPlayerBadge.activeInHierarchy)
             {
                 LOG("Removing badge from hidden");
                 removeFromHiddenPlayers(Networking.LocalPlayer.playerId);
+                willBeVisible = true;
             }
             else
             {
                 LOG("Adding badge to hidden");
                 addToHiddenPlayers(Networking.LocalPlayer.playerId);
+                willBeVisible = false;
             }
             
+            // Save preference
+            PlayerData.SetBool(BADGE_VISIBLE_KEY, !willBeVisible); // Store inverted since we track hidden state
+
             // Set buttons to the correct state
-            foreach (var toggle in showMyBadgeToggles) toggle.SetIsOnWithoutNotify(!localPlayerBadge.activeInHierarchy);
+            foreach (var toggle in showMyBadgeToggles) toggle.SetIsOnWithoutNotify(willBeVisible);
 
             // Serialize the data
             RequestSerialization();
@@ -287,6 +328,8 @@ namespace PeskyBox.BadgeManager
 
         public void ToggleToggleableBadge()
         {
+            if (!_isDataRestored) return;
+
             // Prevents multiple updates per frame
             if (Time.frameCount == _lastRefreshFrame) return;
             _lastRefreshFrame = Time.frameCount;
@@ -294,15 +337,25 @@ namespace PeskyBox.BadgeManager
             LOG("Toggling toggleable badges");
 
             // Toggle the badge visibility
-            setToggleableBadges(!areToggleableBadgesToggled);
+            bool newState = !areToggleableBadgesToggled;
+            setToggleableBadges(newState);
+            
+            // Save preference
+            PlayerData.SetBool(TOGGLEABLE_BADGES_KEY, newState);
         }
         
         public void ToggleAllBadges()
         {
+            if (!_isDataRestored) return;
+
             LOG("Toggling all badges");
 
             // Toggle the badge visibility
-            ShowAllBadgesState(!badgeContainer.activeSelf);
+            bool newState = !badgeContainer.activeSelf;
+            ShowAllBadgesState(newState);
+            
+            // Save preference
+            PlayerData.SetBool(ALL_BADGES_KEY, newState);
         }
         
         private void ShowAllBadgesState(bool state)
