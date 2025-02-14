@@ -106,15 +106,11 @@ namespace PeskyBox.BadgeManager
             }
             if (!PlayerData.HasKey(_localPlayer, TOGGLEABLE_BADGES_KEY))
             {
-                PlayerData.SetBool(BADGE_VISIBLE_KEY, false); // Not hidden by default
-            }
-            if (!PlayerData.HasKey(_localPlayer, TOGGLEABLE_BADGES_KEY))
-            {
                 PlayerData.SetBool(TOGGLEABLE_BADGES_KEY, false); // Not toggled by default
             }
             if (!PlayerData.HasKey(_localPlayer, ALL_BADGES_KEY))
             {
-                PlayerData.SetBool(_localPlayer, ALL_BADGES_KEY, areBadgesTurnedOnByDefault);
+                PlayerData.SetBool(ALL_BADGES_KEY, areBadgesTurnedOnByDefault);
             }
 
             // Load persisted preferences (will get defaults we just set if this is first visit)
