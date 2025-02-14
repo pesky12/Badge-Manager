@@ -77,4 +77,4 @@ jobs:
               ref: 'main',
             })
 
-# thanks to bd_ for this action: https://github.com/bdunderscore/modular-avatar/blob/main/.github/workflows/trigger-repo-rebuild.yml
+# thanks to bd_ for some code of this action: https://github.com/bdunderscore/modular-avatar/blob/main/.github/workflows/trigger-repo-rebuild.yml
